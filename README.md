@@ -11,3 +11,7 @@ Use the `premake5.lua` in the upper folder to include the library in your projec
 ## Compatability and configuration
 The library has been tested on linux and windows and could potentially be ported to other systems.
 Most of the external calls the library makes can be configured through `conf.h`.
+
+# `webrequest.html` file
+I used this file to test the library, especially on windows.
+On linux you will probably need to also get this file somewhere your server software will see it.
