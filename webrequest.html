@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center align-items-center vh-100">
+            <div class="card col-lg-9">
+                <div class="card-body" id="app">
+                    <h5 class="card-title">Neofcgi request testing page</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">Fill a form to send the request</h6>
+                    <div class="row">
+                        <div clas="col-12">
+                            <input class="form-control" type="text" v-model="url">
+                        </div>
+                        <div class="col-4 mt-3">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div 
+                                        class="drop-zone p-5 border border-primary border-2 rounded-3 text-center bg-light"
+                                        :class="{ 'bg-info text-white': isDragging }"
+                                        @dragover.prevent="onDragOver"
+                                        @dragleave.prevent="onDragLeave"
+                                        @drop.prevent="onDragDrop"
+                                    > Drag Files</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4 mt-3">
+                            <label for="MessageString" class="form-label">String To Send</label>
+                            <textarea class="form-control" id="MessageString" rows="3" v-model="text"></textarea>
+                        </div>
+                        <div class="col-4 mt-3">
+                            <h3>Files:</h3>
+                            <ul class="list-group mt-3">
+                                <li v-for="(file, index) in files" :key="index" 
+                                    class="list-group-item d-flex justify-content-between align-items-center">
+                                    
+                                    <div class="text-truncate me-3" style="max-width: 90%;">
+                                    <strong>{{ file.name }}</strong>
+                                    <span class="ml-3 badge rounded-pill bg-secondary">{{ (file.size / 1024).toFixed(2) }} KB<span class="visually-hidden">file size</span> </span>
+                                    <span class="text-muted ms-2"></span>
+                                    </div>
+
+                                    <button @click="removeFile(index)" class="btn btn-outline-danger btn-sm flex-shrink-0">
+                                        Delete
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <button type="button" class="mt-3 btn btn-danger" @click="Submit">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref } = Vue;
+        window.onload = function(){
+            createApp({
+                data(){
+                    return {
+                        files:[],
+                        text:"",
+                        url:"http://localhost/fcgi/",
+                        isDragging: false
+                    }
+                },
+                methods: {
+                    Submit(){
+                        const formData = new FormData();
+                        this.files.forEach(file => {
+                            formData.append('files[]', file);
+                        });
+                        formData.append("text", this.text)
+
+                        fetch(this.url, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => console.log("Success:", data));
+                    },
+                    onDragOver(){
+                        this.isDragging = true;
+                    },
+                    onDragLeave(){
+                        this.isDragging = false;
+                    },
+                    onDragDrop(){
+                        this.isDragging = false;
+            
+                        // Get the files from the dataTransfer object
+                        const droppedFiles = event.dataTransfer.files;
+                        
+                        if (!droppedFiles) return;
+
+                        // Convert FileList to an array and add to our local state
+                        ([...droppedFiles]).forEach(file => {
+                            this.files.push(file);
+                        });
+                    }
+                }
+            }).mount('#app');
+        }
+    </script>
+</body>
+</html>
